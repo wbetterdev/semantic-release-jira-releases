@@ -1,8 +1,7 @@
-import JiraClient, { Version } from 'jira-connector';
 import * as _ from 'lodash';
 import pLimit from 'p-limit';
 
-import { makeClient } from './jira';
+import { JiraClient, makeClient, Version } from './jira';
 import { DEFAULT_RELEASE_DESCRIPTION_TEMPLATE, DEFAULT_VERSION_TEMPLATE, GenerateNotesContext, PluginConfig } from './types';
 import { escapeRegExp } from './util';
 
@@ -33,7 +32,7 @@ export function getTickets(config: PluginConfig, context: GenerateNotesContext):
 }
 
 async function findOrCreateVersion(config: PluginConfig, context: GenerateNotesContext, jira: JiraClient, projectIdOrKey: string, name: string, description: string): Promise<Version> {
-  const remoteVersions = await jira.project.getVersions({ projectIdOrKey });
+  const remoteVersions = await jira.projectVersions.getProjectVersions({ projectIdOrKey });
   context.logger.info(`Looking for version with name '${name}'`);
   const existing = _.find(remoteVersions, { name });
   if (existing) {
@@ -52,7 +51,7 @@ async function findOrCreateVersion(config: PluginConfig, context: GenerateNotesC
     } as any;
   } else {
     const descriptionText = description || '';
-    newVersion = await jira.version.createVersion({
+    newVersion = await jira.projectVersions.createVersion({
       name,
       projectId: projectIdOrKey as any,
       description: descriptionText,
@@ -69,19 +68,17 @@ async function editIssueFixVersions(config: PluginConfig, context: GenerateNotes
   try {
     context.logger.info(`Adding issue ${issueKey} to '${newVersionName}'`);
     if (!config.dryRun) {
-      await jira.issue.editIssue({
-        issueKey,
-        issue: {
-          update: {
-            fixVersions: [{
-              add: { id: releaseVersionId },
-            }],
-          },
-          properties: undefined as any,
+      await jira.issues.editIssue({
+        issueIdOrKey: issueKey,
+        update: {
+          fixVersions: [{
+            add: { id: releaseVersionId },
+          }],
         },
+        properties: undefined as any,
       });
     }
-  } catch (err) {
+  } catch (err: any) {
     const allowedStatusCodes = [400, 404];
     let { statusCode } = err;
     if (typeof err === 'string') {
@@ -114,14 +111,18 @@ export async function success(config: PluginConfig, context: GenerateNotesContex
 
   const jira = makeClient(config, context);
 
-  const project = await jira.project.getProject({ projectIdOrKey: config.projectId });
-  const releaseVersion = await findOrCreateVersion(config, context, jira, project.id, newVersionName, newVersionDescription);
+  const project = await jira.projects.getProject({ projectIdOrKey: config.projectId });
+  const { id: releaseVersionId } = await findOrCreateVersion(config, context, jira, project.id, newVersionName, newVersionDescription);
+
+  if (!releaseVersionId) {
+    throw new Error('Missing release version id!');
+  }
 
   const concurrentLimit = pLimit(config.networkConcurrency || 10);
 
   const edits = tickets.map(issueKey =>
     concurrentLimit(() =>
-      editIssueFixVersions(config, context, jira, newVersionName, releaseVersion.id, issueKey),
+      editIssueFixVersions(config, context, jira, newVersionName, releaseVersionId, issueKey),
     ),
   );
 
