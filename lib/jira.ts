@@ -10,6 +10,7 @@ export function makeClient(config: PluginConfig, _context: PluginContext): JiraC
     throw new Error('JIRA_AUTH environment variable is not set. Must be a JSON string.');
   }
   return new JiraClient({
+    newErrorHandling: true,
     host: config.jiraHost,
     authentication: JSON.parse(process.env.JIRA_AUTH),
   });

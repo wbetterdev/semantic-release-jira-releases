@@ -79,20 +79,11 @@ async function editIssueFixVersions(config: PluginConfig, context: GenerateNotes
       });
     }
   } catch (err: any) {
-    const allowedStatusCodes = [400, 404];
-    let { statusCode } = err;
-    if (typeof err === 'string') {
-      try {
-        err = JSON.parse(err);
-        statusCode = statusCode || err.statusCode;
-      } catch (err) {
-          // it's not json :shrug:
-      }
-    }
-    if (allowedStatusCodes.indexOf(statusCode) === -1) {
+    const allowedMessages = /Issue does not exist/;
+    if (!allowedMessages.test(err?.errorMessages)) {
       throw err;
     }
-    context.logger.error(`Unable to update issue ${issueKey} statusCode: ${statusCode}`);
+    context.logger.error(`Unable to update issue ${issueKey} statusCode: ${JSON.stringify(err, null, 2)}`);
   }
 }
 
