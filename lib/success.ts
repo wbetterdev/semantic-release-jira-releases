@@ -101,6 +101,10 @@ export async function success(config: PluginConfig, context: GenerateNotesContex
 
   context.logger.info(`Found ticket ${tickets.join(', ')}`);
 
+  if (tickets.length === 0) {
+    return;
+  }
+
   const versionTemplate = _.template(config.releaseNameTemplate ?? DEFAULT_VERSION_TEMPLATE);
   const newVersionName = versionTemplate({ version: context.nextRelease.version });
 
