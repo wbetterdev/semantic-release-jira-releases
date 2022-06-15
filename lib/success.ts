@@ -78,12 +78,19 @@ async function editIssueFixVersions(config: PluginConfig, context: GenerateNotes
         properties: undefined as any,
       });
     }
-  } catch (err: any) {
-    const allowedMessages = /Issue does not exist/;
-    if (!allowedMessages.test(err?.errorMessages)) {
-      throw err;
+  } catch (exception: any) {
+    const allowedMessages = [
+      /Issue does not exist/i,
+      /Field 'fixVersions' cannot be set/i
+    ];
+
+    const messages = [...(exception?.errorMessages || []), Object.entries(exception?.errors || {})];
+    const unknown = messages.filter(e => !allowedMessages.some(regex => regex.test(e)));
+    if (unknown.length > 0) {
+      throw exception;
     }
-    context.logger.error(`Unable to update issue ${issueKey} statusCode: ${JSON.stringify(err, null, 2)}`);
+
+    context.logger.error(`Unable to update issue ${issueKey}: ${JSON.stringify(exception, null, 2)}`);
   }
 }
 
