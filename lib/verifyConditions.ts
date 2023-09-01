@@ -1,7 +1,9 @@
 import SemanticReleaseError from '@semantic-release/error';
 
 import { makeClient } from './jira';
-import { PluginConfig, PluginContext } from './types';
+import { GenerateNotesContext, PluginConfig, PluginContext } from './types';
+import { getTickets } from './getTickets';
+import { ensureTicketsAreOpen } from './ensureTicketsAreOpen';
 
 export async function verifyConditions(config: PluginConfig, context: PluginContext): Promise<void> {
   const { networkConcurrency } = config;
@@ -54,4 +56,6 @@ export async function verifyConditions(config: PluginConfig, context: PluginCont
 
   const jira = makeClient(config, context);
   await jira.projects.getProject({ projectIdOrKey: config.projectId });
+  const tickets = getTickets(config, context as GenerateNotesContext);
+  await ensureTicketsAreOpen(jira, tickets);
 }

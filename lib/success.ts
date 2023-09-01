@@ -3,33 +3,7 @@ import pLimit from 'p-limit';
 
 import { JiraClient, makeClient, Version } from './jira';
 import { DEFAULT_RELEASE_DESCRIPTION_TEMPLATE, DEFAULT_VERSION_TEMPLATE, GenerateNotesContext, PluginConfig } from './types';
-import { escapeRegExp } from './util';
-
-export function getTickets(config: PluginConfig, context: GenerateNotesContext): string[] {
-  let patterns: RegExp[] = [];
-
-  if (config.ticketRegex !== undefined) {
-    patterns = [new RegExp(config.ticketRegex, 'giu')];
-  } else {
-    patterns = config.ticketPrefixes!
-        .map(prefix => new RegExp(`\\b${escapeRegExp(prefix)}-(\\d+)\\b`, 'giu'));
-  }
-
-  const tickets = new Set<string>();
-  for (const commit of context.commits) {
-    for (const pattern of patterns) {
-      const matches = commit.message.match(pattern);
-      if (matches) {
-        matches.forEach(match => {
-          tickets.add(match);
-          context.logger.info(`Found ticket ${matches} in commit: ${commit.commit.short}`);
-        });
-      }
-    }
-  }
-
-  return [...tickets];
-}
+import { getTickets } from './getTickets';
 
 async function findOrCreateVersion(config: PluginConfig, context: GenerateNotesContext, jira: JiraClient, projectIdOrKey: string, name: string, description: string): Promise<Version> {
   const remoteVersions = await jira.projectVersions.getProjectVersions({ projectIdOrKey });
@@ -113,7 +87,7 @@ export async function success(config: PluginConfig, context: GenerateNotesContex
 
   const jira = makeClient(config, context);
 
-  await ensureTicketsAreOpen(jira, tickets);
+  // await ensureTicketsAreOpen(jira, tickets);
 
   const project = await jira.projects.getProject({ projectIdOrKey: config.projectId });
   const { id: releaseVersionId } = await findOrCreateVersion(config, context, jira, project.id, newVersionName, newVersionDescription);
@@ -134,39 +108,3 @@ export async function success(config: PluginConfig, context: GenerateNotesContex
 }
 
 
-async function ensureTicketsAreOpen(client: JiraClient, tickets: string[]): Promise<void> {
-    const results = [];
-  
-    for (const ticket of tickets) {
-      try {
-        const {fields} = await client.issues.getIssue({ issueIdOrKey: ticket, fields: ['summary', 'status', 'resolution']});
-  
-        if (fields.status?.statusCategory?.name === 'Done' && fields.resolution) {
-          results.push({
-            message: `*** Ticket ${ticket} is closed with resolution ${fields.resolution.name}. Reopen it to unblock the release.`,
-          });
-        }
-      } catch (e: unknown) {
-        const error = e as Error & { errorMessages?: string[] };
-        const message = error.errorMessages?.join(', ') || error?.message as string || e;
-        results.push({
-          ignore: true,
-          message: `>>> Could not fetch ticket ${ticket}, it will be ignored/skipped. (${message})`,
-        });
-      }
-  
-      if (results.some(x => !x.ignore)) {
-        throw new Error(`
-  
-  PRE-FLIGHT CHECKS FAILED: Some tickets are closed:
-  
-  ${results.map(x => x.message).join('\n')}
-  
-  
-  
-  
-  `);
-      }
-    }
-  
-  }
