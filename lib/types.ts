@@ -7,8 +7,8 @@ export interface PluginContext {
   };
   logger: Signale;
   options: BaseConfig;
-  stderr: typeof process.stderr;
-  stdout: typeof process.stdout;
+  stderr: typeof process.stderr | null;
+  stdout: typeof process.stdout | null;
 }
 
 export interface Person {
