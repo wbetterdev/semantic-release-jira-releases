@@ -1,4 +1,26 @@
+import { cosmiconfig, CosmiconfigResult } from 'cosmiconfig';
+
 import { JiraClient } from './jira';
+
+type Config = {
+  ignored?: string[];
+};
+type Result = Omit<CosmiconfigResult, 'config'> & {
+  config: Config;
+};
+
+let cache: Result | undefined;
+
+const configExplorer = cosmiconfig('semantic-release-jira-releases');
+const getConfig = async () => {
+  cache = cache || await configExplorer.search() as Result
+  return cache?.config || {};
+}
+
+async function isIgnored(ticket: string): Promise<boolean> {
+  const { ignored = [] } = await getConfig();
+  return ignored.includes(ticket);
+}
 
 
 
@@ -12,6 +34,7 @@ export async function ensureTicketsAreOpen(client: JiraClient, tickets: string[]
       if (fields.status?.statusCategory?.name === 'Done' && fields.resolution) {
         results.push({
           message: `*** Ticket ${ticket} is closed with resolution ${fields.resolution.name}. Reopen it to unblock the release.`,
+          ignore: await isIgnored(ticket),
         });
       }
     } catch (e: unknown) {
@@ -25,14 +48,14 @@ export async function ensureTicketsAreOpen(client: JiraClient, tickets: string[]
 
     if (results.some(x => !x.ignore)) {
       throw new Error(`
-  
+
   PRE-FLIGHT CHECKS FAILED: Some tickets are closed:
-  
+
   ${results.map(x => x.message).join('\n')}
-  
-  
-  
-  
+
+
+
+
   `);
     }
   }
