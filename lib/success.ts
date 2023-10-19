@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 import pLimit from 'p-limit';
 
+import { getTickets } from './getTickets';
 import { JiraClient, makeClient, Version } from './jira';
 import { DEFAULT_RELEASE_DESCRIPTION_TEMPLATE, DEFAULT_VERSION_TEMPLATE, GenerateNotesContext, PluginConfig } from './types';
-import { getTickets } from './getTickets';
 
 async function findOrCreateVersion(config: PluginConfig, context: GenerateNotesContext, jira: JiraClient, projectIdOrKey: string, name: string, description: string): Promise<Version> {
   const remoteVersions = await jira.projectVersions.getProjectVersions({ projectIdOrKey });

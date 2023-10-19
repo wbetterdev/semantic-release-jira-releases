@@ -1,7 +1,6 @@
 {
   "extends": [
-    "tslint:recommended",
-    "tslint-config-airbnb"
+    "tslint:recommended"
   ],
   "linterOptions": {
     "format": "stylish",
@@ -12,10 +11,6 @@
   },
   "rules": {
     "ban-ts-ignore": true,
-    "ter-arrow-parens": [true, "as-needed"],
-    "ter-indent": [true, 2, {
-      "SwitchCase": 1
-    }],
     "curly": [true],
     "max-line-length": [true, 255],
     "import-name": [false, {

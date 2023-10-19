@@ -9,14 +9,15 @@
     "prepublishOnly": "mkdir -p dist && rm -rf dist && tsc -p .",
     "lint": "tslint -p .",
     "build": "tsc -p .",
-    "test": " yarn jest"
+    "test": "jest"
   },
   "dependencies": {
-    "@semantic-release/error": "^3.0.0",
+    "@semantic-release/error": "^4.0.0",
     "@types/request": "^2.48.8",
+    "cosmiconfig": "^8.0.0",
     "jira.js": "^2.14.0",
     "lodash": "^4.17.21",
-    "p-limit": "^3.1.0",
+    "p-limit": "^4.0.0",
     "tslib": "^2.4.0"
   },
   "devDependencies": {
@@ -28,8 +29,7 @@
     "@types/signale": "^1.4.4",
     "jest": "^28.1.1",
     "madge": "^5.0.1",
-    "tslint": "^5.11.0",
-    "tslint-config-airbnb": "^5.11.2",
-    "typescript": "^4.7.3"
+    "tslint": "^6.1.3",
+    "typescript": "^4.9.5"
   }
 }
