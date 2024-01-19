@@ -60,11 +60,7 @@ async function editIssueFixVersions(config: PluginConfig, context: GenerateNotes
 
     const messages = [...(exception?.errorMessages || []), Object.entries(exception?.errors || {})];
     const unknown = messages.filter(e => !allowedMessages.some(regex => regex.test(e)));
-    if (unknown.length > 0) {
-      throw exception;
-    }
-
-    context.logger.error(`Unable to update issue ${issueKey}: ${JSON.stringify(exception, null, 2)}`);
+    context.logger.error(`Unable to update issue ${issueKey}: ${unknown.join('\n')}\n${JSON.stringify(exception, null, 2)}`);
   }
 }
 
