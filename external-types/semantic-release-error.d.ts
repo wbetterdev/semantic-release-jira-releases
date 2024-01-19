@@ -1,5 +1,5 @@
 declare module '@semantic-release/error' {
-  class SemanticReleaseError {
+  export default class SemanticReleaseError {
     private message: any;
     private code: any;
     private details: any;
@@ -10,6 +10,4 @@ declare module '@semantic-release/error' {
       details?: any,
     );
   }
-
-  export = SemanticReleaseError;
 }

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "module": "commonjs",
+    "module": "Node16",
     "lib": [
       "es2018",
       "esnext.asynciterable",
@@ -19,15 +19,13 @@
     "noEmitOnError": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
-    "sourceMap": true,
-    "inlineSourceMap": false,
+    // "sourceMap": true,
+    // "inlineSourceMap": false,
     "checkJs": true,
     "allowJs": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "noErrorTruncation": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
+    // "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
   },
   "include": [

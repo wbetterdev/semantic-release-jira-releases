@@ -1,6 +1,6 @@
 import { cosmiconfig, CosmiconfigResult } from 'cosmiconfig';
 
-import { JiraClient } from './jira';
+import { JiraClient } from './jira.js';
 
 type Config = {
   ignored?: string[];

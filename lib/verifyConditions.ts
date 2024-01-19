@@ -1,7 +1,7 @@
 import SemanticReleaseError from '@semantic-release/error';
 
-import { makeClient } from './jira';
-import { PluginConfig, PluginContext } from './types';
+import { makeClient } from './jira.js';
+import { PluginConfig, PluginContext } from './types.js';
 
 export async function verifyConditions(config: PluginConfig, context: PluginContext): Promise<void> {
   const { networkConcurrency } = config;

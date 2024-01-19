@@ -1,7 +1,7 @@
-import { ensureTicketsAreOpen } from './ensureTicketsAreOpen';
-import { getTickets } from './getTickets';
-import { makeClient } from './jira';
-import { GenerateNotesContext, PluginConfig, PluginContext } from './types';
+import { ensureTicketsAreOpen } from './ensureTicketsAreOpen.js';
+import { getTickets } from './getTickets.js';
+import { makeClient } from './jira.js';
+import { GenerateNotesContext, PluginConfig, PluginContext } from './types.js';
 
 export async function analyzeCommits(config: PluginConfig, context: PluginContext): Promise<void> {
   const jira = makeClient(config, context);
