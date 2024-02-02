@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {find, template} from 'lodash';
 import pLimit from 'p-limit';
 
 import { getTickets } from './getTickets.js';
@@ -8,7 +8,7 @@ import { DEFAULT_RELEASE_DESCRIPTION_TEMPLATE, DEFAULT_VERSION_TEMPLATE, Generat
 async function findOrCreateVersion(config: PluginConfig, context: GenerateNotesContext, jira: JiraClient, projectIdOrKey: string, name: string, description: string): Promise<Version> {
   const remoteVersions = await jira.projectVersions.getProjectVersions({ projectIdOrKey });
   context.logger.info(`Looking for version with name '${name}'`);
-  const existing = _.find(remoteVersions, { name });
+  const existing = find(remoteVersions, { name });
   if (existing) {
     context.logger.info(`Found existing release '${existing.id}'`);
     return existing;
@@ -73,10 +73,10 @@ export async function success(config: PluginConfig, context: GenerateNotesContex
     return;
   }
 
-  const versionTemplate = _.template(config.releaseNameTemplate ?? DEFAULT_VERSION_TEMPLATE);
+  const versionTemplate = template(config.releaseNameTemplate ?? DEFAULT_VERSION_TEMPLATE);
   const newVersionName = versionTemplate({ version: context.nextRelease.version });
 
-  const descriptionTemplate = _.template(config.releaseDescriptionTemplate ?? DEFAULT_RELEASE_DESCRIPTION_TEMPLATE);
+  const descriptionTemplate = template(config.releaseDescriptionTemplate ?? DEFAULT_RELEASE_DESCRIPTION_TEMPLATE);
   const newVersionDescription = descriptionTemplate({ version: context.nextRelease.version, notes: context.nextRelease.notes });
 
   context.logger.info(`Using jira release '${newVersionName}'`);
