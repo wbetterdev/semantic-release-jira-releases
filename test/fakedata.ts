@@ -1,19 +1,28 @@
-import { BaseConfig, Person, Commit, PreviousRelease, UpcomingRelease, PluginConfig, PluginContext, GenerateNotesContext } from "../lib/types";
+import {
+  BaseConfig,
+  Person,
+  Commit,
+  PreviousRelease,
+  UpcomingRelease,
+  PluginConfig,
+  PluginContext,
+  GenerateNotesContext,
+} from '../lib/types';
 
 export const baseConfig: BaseConfig = {
   $0: '',
   branch: 'test',
   debug: true,
   dryRun: true,
-}
+};
 
-export const date = new Date("2019-01-01T00:00:00.000Z")
+export const date = new Date('2019-01-01T00:00:00.000Z');
 
 export const author: Person = {
   name: 'test',
   email: 'email',
   date,
-}
+};
 
 export const commits: Commit[] = [
   'chore: fixing whitespace',
@@ -34,31 +43,31 @@ export const commits: Commit[] = [
   subject: '',
   commit: {
     long: '',
-    short: ''
-  }
-}))
+    short: '',
+  },
+}));
 
 export const previousRelease: PreviousRelease = {
   gitHead: '',
   gitTag: '',
-  version: ''
-}
+  version: '',
+};
 
 export const upcomingRelease: UpcomingRelease = {
   ...previousRelease,
   notes: '',
-  type: ''
-}
+  type: '',
+};
 
 export const pluginConfig: Partial<PluginConfig> = {
   ...baseConfig,
   projectId: 'TEST',
-  jiraHost: 'testjira.com'
-}
+  jiraHost: 'testjira.com',
+};
 
 export const logger = {
-  info: jest.fn()
-}
+  info: jest.fn(),
+};
 
 export const pluginContext: PluginContext = {
   cwd: '',
@@ -67,10 +76,10 @@ export const pluginContext: PluginContext = {
   options: baseConfig,
   stderr: null,
   stdout: null,
-}
+};
 export const context: GenerateNotesContext = {
   ...pluginContext,
   commits,
   lastRelease: previousRelease,
-  nextRelease: upcomingRelease
-}
+  nextRelease: upcomingRelease,
+};

@@ -1,32 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es2018",
-    "module": "Node16",
-    "lib": [
-      "es2018",
-      "esnext.asynciterable",
-      "DOM"
-    ],
+    "target": "ES2024",
     "strict": true,
-    "alwaysStrict": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "outDir": "dist",
     "rootDir": ".",
     "noEmitOnError": true,
     "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    // "sourceMap": true,
-    // "inlineSourceMap": false,
     "checkJs": true,
     "allowJs": true,
-    "noErrorTruncation": true,
-    "resolveJsonModule": true,
-    // "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
+    "declaration": true,
+    // "composite": true,
+    "declarationMap": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node"
   },
   "include": [
     "lib/**/*.ts",

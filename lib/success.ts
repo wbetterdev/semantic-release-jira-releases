@@ -1,12 +1,26 @@
 import _ from 'lodash';
 import pLimit from 'p-limit';
 
-import { getTickets } from './getTickets.js';
-import { JiraClient, makeClient, Version } from './jira.js';
-import { DEFAULT_RELEASE_DESCRIPTION_TEMPLATE, DEFAULT_VERSION_TEMPLATE, GenerateNotesContext, PluginConfig } from './types.js';
+import { getTickets } from './getTickets';
+import { JiraClient, makeClient, Version } from './client';
+import {
+  DEFAULT_RELEASE_DESCRIPTION_TEMPLATE,
+  DEFAULT_VERSION_TEMPLATE,
+  GenerateNotesContext,
+  PluginConfig,
+} from './types';
 
-async function findOrCreateVersion(config: PluginConfig, context: GenerateNotesContext, jira: JiraClient, projectIdOrKey: string, name: string, description: string): Promise<Version> {
-  const remoteVersions = await jira.projectVersions.getProjectVersions({ projectIdOrKey });
+async function findOrCreateVersion(
+  config: PluginConfig,
+  context: GenerateNotesContext,
+  jira: JiraClient,
+  projectIdOrKey: string,
+  name: string,
+  description: string,
+): Promise<Version> {
+  const remoteVersions = await jira.projectVersions.getProjectVersions({
+    projectIdOrKey,
+  });
   context.logger.info(`Looking for version with name '${name}'`);
   const existing = _.find(remoteVersions, { name });
   if (existing) {
@@ -30,7 +44,7 @@ async function findOrCreateVersion(config: PluginConfig, context: GenerateNotesC
       projectId: projectIdOrKey as any,
       description: descriptionText,
       released: Boolean(config.released),
-      releaseDate: config.setReleaseDate ? (new Date().toISOString()) : undefined,
+      releaseDate: config.setReleaseDate ? new Date().toISOString() : undefined,
     });
   }
 
@@ -38,16 +52,25 @@ async function findOrCreateVersion(config: PluginConfig, context: GenerateNotesC
   return newVersion;
 }
 
-async function editIssueFixVersions(config: PluginConfig, context: GenerateNotesContext, jira: JiraClient, newVersionName: string, releaseVersionId: string, issueKey: string): Promise<void> {
+async function editIssueFixVersions(
+  config: PluginConfig,
+  context: GenerateNotesContext,
+  jira: JiraClient,
+  newVersionName: string,
+  releaseVersionId: string,
+  issueKey: string,
+): Promise<void> {
   try {
     context.logger.info(`Adding issue ${issueKey} to '${newVersionName}'`);
     if (!config.dryRun) {
       await jira.issues.editIssue({
         issueIdOrKey: issueKey,
         update: {
-          fixVersions: [{
-            add: { id: releaseVersionId },
-          }],
+          fixVersions: [
+            {
+              add: { id: releaseVersionId },
+            },
+          ],
         },
         properties: undefined as any,
       });
@@ -55,16 +78,26 @@ async function editIssueFixVersions(config: PluginConfig, context: GenerateNotes
   } catch (exception: any) {
     const allowedMessages = [
       /Issue does not exist/i,
-      /Field 'fixVersions' cannot be set/i
+      /Field 'fixVersions' cannot be set/i,
     ];
 
-    const messages = [...(exception?.errorMessages || []), Object.entries(exception?.errors || {})];
-    const unknown = messages.filter(e => !allowedMessages.some(regex => regex.test(e)));
-    context.logger.error(`Unable to update issue ${issueKey}: ${unknown.join('\n')}\n${JSON.stringify(exception, null, 2)}`);
+    const messages = [
+      ...(exception?.errorMessages || []),
+      Object.entries(exception?.errors || {}),
+    ];
+    const unknown = messages.filter(
+      e => !allowedMessages.some(regex => regex.test(e)),
+    );
+    context.logger.error(
+      `Unable to update issue ${issueKey}: ${unknown.join('\n')}\n${JSON.stringify(exception, null, 2)}`,
+    );
   }
 }
 
-export async function success(config: PluginConfig, context: GenerateNotesContext): Promise<void> {
+export async function success(
+  config: PluginConfig,
+  context: GenerateNotesContext,
+): Promise<void> {
   const tickets = getTickets(config, context);
 
   context.logger.info(`Found ticket ${tickets.join(', ')}`);
@@ -73,11 +106,20 @@ export async function success(config: PluginConfig, context: GenerateNotesContex
     return;
   }
 
-  const versionTemplate = _.template(config.releaseNameTemplate ?? DEFAULT_VERSION_TEMPLATE);
-  const newVersionName = versionTemplate({ version: context.nextRelease.version });
+  const versionTemplate = _.template(
+    config.releaseNameTemplate ?? DEFAULT_VERSION_TEMPLATE,
+  );
+  const newVersionName = versionTemplate({
+    version: context.nextRelease.version,
+  });
 
-  const descriptionTemplate = _.template(config.releaseDescriptionTemplate ?? DEFAULT_RELEASE_DESCRIPTION_TEMPLATE);
-  const newVersionDescription = descriptionTemplate({ version: context.nextRelease.version, notes: context.nextRelease.notes });
+  const descriptionTemplate = _.template(
+    config.releaseDescriptionTemplate ?? DEFAULT_RELEASE_DESCRIPTION_TEMPLATE,
+  );
+  const newVersionDescription = descriptionTemplate({
+    version: context.nextRelease.version,
+    notes: context.nextRelease.notes,
+  });
 
   context.logger.info(`Using jira release '${newVersionName}'`);
 
@@ -85,8 +127,17 @@ export async function success(config: PluginConfig, context: GenerateNotesContex
 
   // await ensureTicketsAreOpen(jira, tickets);
 
-  const project = await jira.projects.getProject({ projectIdOrKey: config.projectId });
-  const { id: releaseVersionId } = await findOrCreateVersion(config, context, jira, project.id, newVersionName, newVersionDescription);
+  const project = await jira.projects.getProject({
+    projectIdOrKey: config.projectId,
+  });
+  const { id: releaseVersionId } = await findOrCreateVersion(
+    config,
+    context,
+    jira,
+    project.id!,
+    newVersionName,
+    newVersionDescription,
+  );
 
   if (!releaseVersionId) {
     throw new Error('Missing release version id!');
@@ -96,11 +147,16 @@ export async function success(config: PluginConfig, context: GenerateNotesContex
 
   const edits = tickets.map(issueKey =>
     concurrentLimit(() =>
-      editIssueFixVersions(config, context, jira, newVersionName, releaseVersionId, issueKey),
+      editIssueFixVersions(
+        config,
+        context,
+        jira,
+        newVersionName,
+        releaseVersionId,
+        issueKey,
+      ),
     ),
   );
 
   await Promise.all(edits);
 }
-
-

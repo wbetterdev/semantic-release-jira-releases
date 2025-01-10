@@ -1,6 +1,6 @@
 import { cosmiconfig, CosmiconfigResult } from 'cosmiconfig';
 
-import { JiraClient } from './jira.js';
+import { JiraClient } from './client';
 
 type Config = {
   ignored?: string[];
@@ -13,23 +13,27 @@ let cache: Result | undefined;
 
 const configExplorer = cosmiconfig('semantic-release-jira-releases');
 const getConfig = async () => {
-  cache = cache || await configExplorer.search() as Result
+  cache = cache || ((await configExplorer.search()) as Result);
   return cache?.config || {};
-}
+};
 
 async function isIgnored(ticket: string): Promise<boolean> {
   const { ignored = [] } = await getConfig();
   return ignored.includes(ticket);
 }
 
-
-
-export async function ensureTicketsAreOpen(client: JiraClient, tickets: string[]): Promise<void> {
+export async function ensureTicketsAreOpen(
+  client: JiraClient,
+  tickets: string[],
+): Promise<void> {
   const results = [];
 
   for (const ticket of tickets) {
     try {
-      const { fields } = await client.issues.getIssue({ issueIdOrKey: ticket, fields: ['summary', 'status', 'resolution'] });
+      const { fields } = await client.issues.getIssue({
+        issueIdOrKey: ticket,
+        fields: ['summary', 'status', 'resolution'],
+      });
 
       if (fields.status?.statusCategory?.name === 'Done' && fields.resolution) {
         results.push({
@@ -38,8 +42,9 @@ export async function ensureTicketsAreOpen(client: JiraClient, tickets: string[]
         });
       }
     } catch (e: unknown) {
-      const error = e as Error & { errorMessages?: string[]; };
-      const message = error.errorMessages?.join(', ') || error?.message as string || e;
+      const error = e as Error & { errorMessages?: string[] };
+      const message =
+        error.errorMessages?.join(', ') || (error?.message as string) || e;
       results.push({
         ignore: true,
         message: `>>> Could not fetch ticket ${ticket}, it will be ignored/skipped. (${message})`,
@@ -59,5 +64,4 @@ export async function ensureTicketsAreOpen(client: JiraClient, tickets: string[]
   `);
     }
   }
-
 }
