@@ -79,5 +79,11 @@ export async function verifyConditions(
   }
 
   const jira = makeClient(config, context);
-  await jira.projects.getProject({ projectIdOrKey: config.projectId });
+  try {
+    await jira.projects.getProject({ projectIdOrKey: config.projectId });
+  } catch {
+    throw new SemanticReleaseError(
+      `Could not find project ${config.projectId} on ${config.jiraHost}, check your config/authentication.`,
+    );
+  }
 }
