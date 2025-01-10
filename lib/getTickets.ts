@@ -1,5 +1,5 @@
-import { GenerateNotesContext, PluginConfig } from './types';
-import { escapeRegExp } from './util';
+import { GenerateNotesContext, PluginConfig } from './types.js';
+import { escapeRegExp } from './util.js';
 
 export function getTickets(
   config: PluginConfig,

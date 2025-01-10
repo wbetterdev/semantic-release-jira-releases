@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import pLimit from 'p-limit';
 
-import { getTickets } from './getTickets';
-import { JiraClient, makeClient, Version } from './client';
+import { getTickets } from './getTickets.js';
+import { JiraClient, makeClient, Version } from './client.js';
 import {
   DEFAULT_RELEASE_DESCRIPTION_TEMPLATE,
   DEFAULT_VERSION_TEMPLATE,

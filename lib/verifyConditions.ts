@@ -1,7 +1,7 @@
 import SemanticReleaseError from '@semantic-release/error';
 
-import { makeClient } from './client';
-import { PluginConfig, PluginContext } from './types';
+import { makeClient } from './client.js';
+import { PluginConfig, PluginContext } from './types.js';
 
 export async function verifyConditions(
   config: PluginConfig,

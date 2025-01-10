@@ -1,6 +1,6 @@
 import { Version2Client as JiraClient, Version2Models } from 'jira.js';
 
-import { PluginConfig, PluginContext } from './types';
+import { PluginConfig, PluginContext } from './types.js';
 
 export type { JiraClient };
 export type Version = Version2Models.Version;

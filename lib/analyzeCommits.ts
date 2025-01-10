@@ -1,7 +1,7 @@
-import { ensureTicketsAreOpen } from './ensureTicketsAreOpen';
-import { getTickets } from './getTickets';
-import { makeClient } from './client';
-import { GenerateNotesContext, PluginConfig, PluginContext } from './types';
+import { ensureTicketsAreOpen } from './ensureTicketsAreOpen.js';
+import { getTickets } from './getTickets.js';
+import { makeClient } from './client.js';
+import { GenerateNotesContext, PluginConfig, PluginContext } from './types.js';
 
 export async function analyzeCommits(
   config: PluginConfig,
