@@ -1,6 +1,6 @@
 {
   "name": "@waybetter/semantic-release-jira-releases",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/lib/index.js",
   "type": "module",
   "repository": "https://github.com/UpHabit/semantic-release-jira-releases",
@@ -17,8 +17,7 @@
     "cosmiconfig": "^9.0.0",
     "jira.js": "^4.0.6",
     "lodash": "^4.17.21",
-    "p-limit": "^6.2.0",
-    "tslib": "^2.8.1"
+    "p-limit": "^6.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
