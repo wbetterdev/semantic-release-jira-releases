@@ -8,7 +8,7 @@ import {
   DEFAULT_VERSION_TEMPLATE,
   GenerateNotesContext,
   PluginConfig,
-} from './types';
+} from './types.js';
 
 async function findOrCreateVersion(
   config: PluginConfig,
