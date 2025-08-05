@@ -52,6 +52,24 @@ async function findOrCreateVersion(
   return newVersion;
 }
 
+function analyzeError(issueKey: string, exception: any, logger: any): void {
+  const allowedMessages = [
+    /Issue does not exist/i,
+    /Field 'fixVersions' cannot be set/i,
+  ];
+
+  const messages = [
+    ...(exception?.errorMessages || []),
+    Object.entries(exception?.errors || {}),
+  ];
+  const unknown = messages.filter(
+    e => !allowedMessages.some(regex => regex.test(e)),
+  );
+  logger.error(
+    `Unable to update issue ${issueKey}: ${unknown.join('\n')}\n${JSON.stringify(exception, null, 2)}`,
+  );
+}
+
 async function editIssueFixVersions(
   config: PluginConfig,
   context: GenerateNotesContext,
@@ -63,34 +81,35 @@ async function editIssueFixVersions(
   try {
     context.logger.info(`Adding issue ${issueKey} to '${newVersionName}'`);
     if (!config.dryRun) {
-      await jira.issues.editIssue({
-        issueIdOrKey: issueKey,
-        update: {
-          fixVersions: [
-            {
-              add: { id: releaseVersionId },
-            },
-          ],
-        },
-        properties: undefined as any,
-      });
+      try {
+        await jira.issues.editIssue({
+          issueIdOrKey: issueKey,
+          update: {
+            fixVersions: [
+              {
+                add: { id: releaseVersionId },
+              },
+            ],
+          },
+          properties: undefined as any,
+        });
+      } catch (exception: any) {
+        await jira.issues.editIssue({
+          issueIdOrKey: issueKey,
+          update: {
+            comment: [
+              {
+                add: {
+                  body: `Could not add this issue to '${newVersionName}' (${releaseVersionId})\n\nReason: ${exception.message}`,
+                },
+              },
+            ],
+          },
+        });
+      }
     }
   } catch (exception: any) {
-    const allowedMessages = [
-      /Issue does not exist/i,
-      /Field 'fixVersions' cannot be set/i,
-    ];
-
-    const messages = [
-      ...(exception?.errorMessages || []),
-      Object.entries(exception?.errors || {}),
-    ];
-    const unknown = messages.filter(
-      e => !allowedMessages.some(regex => regex.test(e)),
-    );
-    context.logger.error(
-      `Unable to update issue ${issueKey}: ${unknown.join('\n')}\n${JSON.stringify(exception, null, 2)}`,
-    );
+    analyzeError(issueKey, exception, context.logger);
   }
 }
 
@@ -124,8 +143,6 @@ export async function success(
   context.logger.info(`Using jira release '${newVersionName}'`);
 
   const jira = makeClient(config, context);
-
-  // await ensureTicketsAreOpen(jira, tickets);
 
   const project = await jira.projects.getProject({
     projectIdOrKey: config.projectId,
