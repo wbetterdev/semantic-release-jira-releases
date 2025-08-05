@@ -19,7 +19,12 @@ const getConfig = async () => {
 
 async function isIgnored(ticket: string): Promise<boolean> {
   const { ignored = [] } = await getConfig();
-  return ignored.includes(ticket);
+  for (const ignore of ignored) {
+    if (ticket.match(ignore)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export async function ensureTicketsAreOpen(
