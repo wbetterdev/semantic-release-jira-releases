@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "prepublishOnly": "mkdir -p dist && rm -rf dist && tsc -p .",
+    "prepublishOnly": "rm -rf dist && mkdir -p dist && tsc -p .",
     "lint": "eslint . --ignore-pattern \"dist/*\"",
     "build": "tsc -p .",
     "test": "jest"
